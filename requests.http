@@ -1,0 +1,62 @@
+### Task Management API - request examples
+# Works with the VS Code "REST Client" extension (humao.rest-client)
+# or JetBrains HTTP Client. Click "Send Request" above each block.
+
+@baseUrl = http://localhost:3000
+
+### Health check (200 = app + database healthy, 503 = database down)
+GET {{baseUrl}}/health
+
+### List all tasks (newest first)
+GET {{baseUrl}}/tasks
+
+### Create a task (only "title" is required)
+# @name createTask
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Set up CI pipeline",
+  "description": "Build and test on every push with GitHub Actions",
+  "priority": "HIGH"
+}
+
+### Get the task created above
+GET {{baseUrl}}/tasks/{{createTask.response.body.id}}
+
+### Update a task (send only the fields to change)
+PATCH {{baseUrl}}/tasks/{{createTask.response.body.id}}
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS"
+}
+
+### Clear the description
+PATCH {{baseUrl}}/tasks/{{createTask.response.body.id}}
+Content-Type: application/json
+
+{
+  "description": null
+}
+
+### Delete a task (204 No Content)
+DELETE {{baseUrl}}/tasks/{{createTask.response.body.id}}
+
+### --- Error examples ---
+
+### 400 - validation errors (empty title, invalid enum, unknown field)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "",
+  "priority": "URGENT",
+  "unknownField": true
+}
+
+### 400 - malformed id
+GET {{baseUrl}}/tasks/not-a-uuid
+
+### 404 - task does not exist
+GET {{baseUrl}}/tasks/00000000-0000-4000-8000-000000000000
